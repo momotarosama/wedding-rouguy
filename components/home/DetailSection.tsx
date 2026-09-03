@@ -116,7 +116,7 @@ export default function DetailSection() {
                   </span>
                 </div>
 
-                <div
+                {/* <div
                   onClick={() => {
                     window.open(
                       "https://yango.com/adj/yango?end-lon=-17.43159&end-lat=14.73933",
@@ -128,7 +128,7 @@ export default function DetailSection() {
                   <span className="text-sm leading-7  md:text-base">
                     Prendre un Yango
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           </Reveal>
