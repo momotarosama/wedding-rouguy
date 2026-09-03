@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import Reveal from "../Reveal";
+import { addGuest } from "@/services/guests.service";
+import { toast } from "sonner";
+import { Spinner } from "../Spinner";
+import axios from "axios";
 
 export default function RsvpSection() {
   const [formData, setFormData] = useState({
@@ -10,6 +14,7 @@ export default function RsvpSection() {
     telephone: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -25,24 +30,35 @@ export default function RsvpSection() {
     const nom = formData.get("nom");
     const prenom = formData.get("prenom");
     const telephone = formData.get("telephone");
-
+    setIsSubmitting(true);
     try {
-      await fetch(
-        "https://script.google.com/macros/s/AKfycbwqIovLFCI-jy-3IXI1BqeX5wyATA7aDeY9Ekz3UyDOsYdM0ytM7LsWjTBrf8lf0gAYzQ/exec",
-        {
-          method: "POST",
-          mode: "no-cors",
-          body: JSON.stringify({
-            nom,
-            prenom,
-            telephone,
-          }),
-        },
-      );
+      await addGuest({
+        firstName: prenom as string,
+        lastName: nom as string,
+        phone: telephone as string,
+      });
 
-      console.log("Réponse envoyée !");
+      // On vide les champs uniquement si l'ajout a réussi
+      setFormData({
+        nom: "",
+        prenom: "",
+        telephone: "",
+      });
+
+      toast.success(
+        "Merci pour votre confirmation ! Rendez-vous le 06 Septembre.",
+      );
     } catch (error) {
       console.error("Erreur :", error);
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        toast.error("Désolé, toutes les places ont déjà été réservées.");
+
+        return;
+      } else {
+        toast.error("Une erreur est survenue. Veuillez réessayer.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,7 +172,7 @@ export default function RsvpSection() {
                 type="submit"
                 className=" cursor-pointer border text-xs border-white/85 px-10 py-4 md:text-sm uppercase tracking-[0.3em] text-white transition-all duration-300 hover:bg-white hover:text-neutral-800 hover:scale-105"
               >
-                Confirmer ma présence
+                {isSubmitting ? <Spinner /> : "Confirmer ma présence"}
               </button>
             </div>
           </Reveal>
